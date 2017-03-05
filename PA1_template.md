@@ -1,16 +1,54 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-```{r}
+# Reproducible Research: Peer Assessment 1
+
+```r
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.3.2
+```
+
+```r
 library(scales)
+```
+
+```
+## Warning: package 'scales' was built under R version 3.3.2
+```
+
+```r
 library(Hmisc)
 ```
+
+```
+## Warning: package 'Hmisc' was built under R version 3.3.2
+```
+
+```
+## Loading required package: lattice
+```
+
+```
+## Loading required package: survival
+```
+
+```
+## Loading required package: Formula
+```
+
+```
+## 
+## Attaching package: 'Hmisc'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, round.POSIXt, trunc.POSIXt, units
+```
 ## Loading and preprocessing the data
-```{r}
+
+```r
 if(!file.exists('activity.csv')){
         unzip('activity.zip')
 }
@@ -18,54 +56,66 @@ activityData <- read.csv('activity.csv')
 ```
 ## What is mean total number of steps taken per day?
 - Code for reading in the dataset and/or processing the data
-```{r}
+
+```r
 stepsPerDay <- tapply(activityData$steps,activityData$date,sum, na.rm = TRUE)
 ```
 
 - Histogram of the total number of steps taken each day
-```{r}
+
+```r
 library(ggplot2)
 qplot(stepsPerDay,xlab='Total steps per day', ylab='Frequency using binwith 500', binwidth=500)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 - Mean and median number of steps taken each day
-```{r}
+
+```r
 stepsPerDayMean <- mean(stepsPerDay)
 stepsPerDayMedian <- median(stepsPerDay)
 ```
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 averageStepsPerInterval <- aggregate(x=list(meanSteps=activityData$steps),by=list(interval=activityData$interval),FUN = mean, na.rm = TRUE)
 ```
 
 - Time series plot of the average number of steps taken
-```{r}
+
+```r
 ggplot(data=averageStepsPerInterval, aes(x=interval, y=meanSteps)) +
     geom_line() +
     xlab("5-minute interval") +
     ylab("average number of steps taken") 
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 - The 5-minute interval that, on average, contains the maximum number of steps
-```{r}
+
+```r
 mostSteps <- which.max(averageStepsPerInterval$meanSteps)
 timeMostSteps <- gsub("([0-9]{1,2})([0-9]{2})", "\\1:\\2", averageStepsPerInterval[mostSteps,'interval'])
 ```
 ## Imputing missing values
 - Code to describe and show a strategy for imputing missing data
-```{r}
+
+```r
 numMissingValues <- length(which(is.na(activityData$steps)))
 ```
 
-```{r}
+
+```r
 activity_new <- activityData
 activity_new[is.na(activity_new$steps),]$steps <- averageStepsPerInterval[match(activity_new[is.na(activity_new$steps),]$interval,averageStepsPerInterval$interval),2]
-
 ```
 
 - Histogram of the total number of steps taken each day after missing values are imputed
-```{r}
+
+```r
 stepsPerDay_new <- tapply(activity_new$steps,activity_new$date,sum)
 
 par(mfrow=c(1,2))
@@ -78,10 +128,13 @@ hist(stepsPerDay_new,10, main = "Total number of steps taken per day
 abline(v = median(stepsPerDay_new), col = 4, lwd = 4)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 - Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
-```{r}
+
+```r
 activity_new$date <- as.Date(activity_new$date)
 activity_new$wd <- weekdays(activity_new$date)
 activity_new$wd2 <- as.factor(c("weekend", "weekday"))
@@ -94,8 +147,16 @@ daily_weekend <- tapply(activity_new_weekend$steps,activity_new_weekend$interval
 ```
 
 - Plot 2 charts
-```{r}
+
+```r
 plot(y=daily_weekday,x=names(daily_weekday),type = "l",xlab="5-Min Interval",main = "Daily Activity Pattern during Weekday", ylab = "Average Steps", ylim = c(0,250))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
+```r
 plot(y=daily_weekend,x=names(daily_weekend),type = "l", xlab = "5-Min Interval", main = "Daily Activity Pattern during Weekend", ylab = "Average Steps", ylim = c(0,250))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-2.png)<!-- -->
 - All of the R code needed to reproduce the results (numbers, plots, etc.) in the report
